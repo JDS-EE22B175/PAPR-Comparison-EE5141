@@ -1,11 +1,6 @@
 """
-Main entry point — orchestrates Monte Carlo simulation, plotting, and export.
-
-Usage:
-    python main.py                  # full run (3 QAM orders × 10k iterations)
-    python main.py --quick          # quick test (1k iterations)
-
-All outputs are saved to the 'outputs/' directory.
+Main script to run the PAPR simulation.
+Will do a Monte Carlo simulation for OFDMA, F-DOSS, IFDMA, and SC-FDMA.
 """
 
 import argparse
@@ -15,20 +10,13 @@ import numpy as np
 
 from src import config
 from src.config import SCHEME_NAMES, SCHEME_FUNCS
-import src.transmitters          # noqa: F401 — registers schemes into config
+import src.transmitters  # noqa: F401 - need this to register schemes
 from src.utils import gen_qam_symbols, calc_papr_dB
 from src.plotting import plot_single_qam, plot_combined
 from src.export_excel import export_results
 
-
 def run_monte_carlo(qam_order: int, num_iter: int) -> np.ndarray:
-    """
-    Run Monte Carlo PAPR simulation for one QAM modulation order.
-
-    Returns
-    -------
-    papr_db : ndarray, shape (num_schemes, num_iter)
-    """
+    """Runs the simulation for a specific QAM order."""
     num_schemes = len(SCHEME_NAMES)
     papr_db = np.zeros((num_schemes, num_iter))
 
@@ -40,69 +28,56 @@ def run_monte_carlo(qam_order: int, num_iter: int) -> np.ndarray:
 
     return papr_db
 
-
 def main():
     parser = argparse.ArgumentParser(description="PAPR CCDF Simulation")
-    parser.add_argument("--quick", action="store_true",
-                        help="Run with 1000 iterations instead of 10000")
+    parser.add_argument("--quick", action="store_true", help="Run fewer iterations for testing")
     args = parser.parse_args()
 
-    # Ensure outputs directory exists
+    # Create outputs folder if it doesn't exist
     os.makedirs("outputs", exist_ok=True)
 
     num_iter = 1000 if args.quick else config.NUM_ITER
     np.random.seed(config.RANDOM_SEED)
 
-    print("=" * 70)
-    print("  PAPR Comparison Simulation (Modular structure)")
-    print(f"  N={config.N}, K={config.K}, P={config.P},"
-          f" L={config.L_OS}, Iterations={num_iter}")
-    print(f"  QAM orders: {config.QAM_ORDERS}")
-    print(f"  Schemes: {SCHEME_NAMES}")
-    print("=" * 70)
+    print("========================================")
+    print(" PAPR Comparison Simulation")
+    print(f" N={config.N}, K={config.K}, P={config.P}, L={config.L_OS}, Iterations={num_iter}")
+    print("========================================")
 
-    # ──────────── Monte Carlo ───────────────────────────────────────────
+    # Run the simulations
     all_results = {}
     for qam in config.QAM_ORDERS:
-        print(f"\n>>> {qam}-QAM ...")
+        print(f"\n--- {qam}-QAM ---")
         t0 = time.time()
         papr_db = run_monte_carlo(qam, num_iter)
         elapsed = time.time() - t0
         all_results[qam] = papr_db
 
-        print(f"    Done in {elapsed:.1f}s")
+        print(f"  Done in {elapsed:.1f}s")
         for s, name in enumerate(SCHEME_NAMES):
-            m = np.mean(papr_db[s])
+            mean_val = np.mean(papr_db[s])
             p99 = np.percentile(papr_db[s], 99)
-            p999 = np.percentile(papr_db[s], 99.9)
-            print(f"    {name:18s}:  mean={m:.2f},  "
-                  f"99th%={p99:.2f},  99.9th%={p999:.2f} dB")
+            print(f"  {name:15s}: mean={mean_val:.2f}dB, 99%={p99:.2f}dB")
 
-    # ──────────── Plots ─────────────────────────────────────────────────
+    # Generate the plots
     print("\nGenerating plots in outputs/ ...")
     for qam in config.QAM_ORDERS:
         plot_single_qam(all_results[qam], qam, os.path.join("outputs", f"papr_ccdf_{qam}qam.png"))
     plot_combined(all_results, config.QAM_ORDERS, os.path.join("outputs", "papr_ccdf_combined.png"))
 
-    # ──────────── Excel ─────────────────────────────────────────────────
-    print("\nExporting Excel to outputs/ ...")
-    # "Other code" results provided by the user for comparison
+    # Export to excel
+    print("Exporting data to Excel ...")
+    
+    # Values from the other buggy code to compare against
     other_code = {
-        4:  {0.01: [9.70, 9.76, 9.68, 9.68],
-             0.001: [10.62, 10.65, 10.56, 10.56]},
-        16: {0.01: [9.76, 9.74, 9.68, 9.68],
-             0.001: [10.62, 10.65, 10.57, 10.57]},
-        64: {0.01: [9.70, 9.73, 9.65, 9.65],
-             0.001: [10.60, 10.68, 10.60, 10.60]},
+        4:  {0.01: [9.70, 9.76, 9.68, 9.68], 0.001: [10.62, 10.65, 10.56, 10.56]},
+        16: {0.01: [9.76, 9.74, 9.68, 9.68], 0.001: [10.62, 10.65, 10.57, 10.57]},
+        64: {0.01: [9.70, 9.73, 9.65, 9.65], 0.001: [10.60, 10.68, 10.60, 10.60]},
     }
-    export_results(all_results, os.path.join("outputs", "papr_results.xlsx"),
-                   other_code_results=other_code)
+    export_results(all_results, os.path.join("outputs", "papr_results.xlsx"), other_code_results=other_code)
 
-    # ──────────── Done ──────────────────────────────────────────────────
-    print("\n" + "=" * 70)
-    print("  All outputs generated in 'outputs/' directory!")
-    print("=" * 70)
-
+    print("\nAll done!")
 
 if __name__ == "__main__":
     main()
+

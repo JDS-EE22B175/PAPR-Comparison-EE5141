@@ -1,27 +1,22 @@
 """
-Global simulation parameters.
-Reference: Giridhar PDF pages 7-11.
-
-  N = K × P   where:
-    N = total system subcarriers (FFT size)
-    K = number of uplink users
-    P = subcarriers allocated per user
+Global config parameters for the simulation.
+Based on Prof. Giridhar's slides.
 """
 
-# ──────────── System Parameters ──────────────
-N = 256          # Total subcarriers / FFT size
-K = 4            # Number of uplink users
-P = N // K       # Subcarriers per user  (= 64)
+# System params
+N = 256          # Total FFT size
+K = 4            # Number of users
+P = N // K       # subcarriers per user
 
-assert K * P == N, f"K*P = {K*P} ≠ N = {N}"
+assert K * P == N, "K*P must equal N"
 
-# ──────────── Simulation Parameters ──────────
-NUM_ITER   = 10_000        # Monte Carlo iterations per QAM order
-L_OS       = 4             # Oversampling factor (L≥4 → <0.1 dB PAPR error)
-QAM_ORDERS = [4, 16, 64]   # QPSK, 16-QAM, 64-QAM
-RANDOM_SEED = 42            # For reproducibility
+# Simulation params
+NUM_ITER = 10000        # Monte Carlo runs
+L_OS = 4             # Oversampling factor for accurate PAPR
+QAM_ORDERS = [4, 16, 64]   # modulation orders
+RANDOM_SEED = 42
 
-# ──────────── Scheme Registry ────────────────
-# Filled by transmitters.py at import time
+# To store the different schemes to run
 SCHEME_NAMES = []
 SCHEME_FUNCS = []
+
