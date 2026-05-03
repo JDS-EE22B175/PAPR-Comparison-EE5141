@@ -1,7 +1,7 @@
 # PAPR Comparison: OFDMA vs GMC Uplink Schemes
 
 > **EE5141 – Wireless & Cellular Communications, IIT Madras (Semester 8)**
-> Mini Project — 40% of course grade
+> Mini Project
 
 ## Problem Statement
 
