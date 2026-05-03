@@ -5,19 +5,20 @@ Usage:
     python main.py                  # full run (3 QAM orders × 10k iterations)
     python main.py --quick          # quick test (1k iterations)
 
-All outputs are saved to the current directory.
+All outputs are saved to the 'outputs/' directory.
 """
 
 import argparse
 import time
+import os
 import numpy as np
 
-import config
-from config import SCHEME_NAMES, SCHEME_FUNCS
-import transmitters          # noqa: F401 — registers schemes into config
-from utils import gen_qam_symbols, calc_papr_dB
-from plotting import plot_single_qam, plot_combined
-from export_excel import export_results
+from src import config
+from src.config import SCHEME_NAMES, SCHEME_FUNCS
+import src.transmitters          # noqa: F401 — registers schemes into config
+from src.utils import gen_qam_symbols, calc_papr_dB
+from src.plotting import plot_single_qam, plot_combined
+from src.export_excel import export_results
 
 
 def run_monte_carlo(qam_order: int, num_iter: int) -> np.ndarray:
@@ -46,11 +47,14 @@ def main():
                         help="Run with 1000 iterations instead of 10000")
     args = parser.parse_args()
 
+    # Ensure outputs directory exists
+    os.makedirs("outputs", exist_ok=True)
+
     num_iter = 1000 if args.quick else config.NUM_ITER
     np.random.seed(config.RANDOM_SEED)
 
     print("=" * 70)
-    print("  PAPR Comparison Simulation")
+    print("  PAPR Comparison Simulation (Modular structure)")
     print(f"  N={config.N}, K={config.K}, P={config.P},"
           f" L={config.L_OS}, Iterations={num_iter}")
     print(f"  QAM orders: {config.QAM_ORDERS}")
@@ -75,13 +79,13 @@ def main():
                   f"99th%={p99:.2f},  99.9th%={p999:.2f} dB")
 
     # ──────────── Plots ─────────────────────────────────────────────────
-    print("\nGenerating plots ...")
+    print("\nGenerating plots in outputs/ ...")
     for qam in config.QAM_ORDERS:
-        plot_single_qam(all_results[qam], qam, f"papr_ccdf_{qam}qam.png")
-    plot_combined(all_results, config.QAM_ORDERS, "papr_ccdf_combined.png")
+        plot_single_qam(all_results[qam], qam, os.path.join("outputs", f"papr_ccdf_{qam}qam.png"))
+    plot_combined(all_results, config.QAM_ORDERS, os.path.join("outputs", "papr_ccdf_combined.png"))
 
     # ──────────── Excel ─────────────────────────────────────────────────
-    print("\nExporting Excel ...")
+    print("\nExporting Excel to outputs/ ...")
     # "Other code" results provided by the user for comparison
     other_code = {
         4:  {0.01: [9.70, 9.76, 9.68, 9.68],
@@ -91,12 +95,12 @@ def main():
         64: {0.01: [9.70, 9.73, 9.65, 9.65],
              0.001: [10.60, 10.68, 10.60, 10.60]},
     }
-    export_results(all_results, "papr_results.xlsx",
+    export_results(all_results, os.path.join("outputs", "papr_results.xlsx"),
                    other_code_results=other_code)
 
     # ──────────── Done ──────────────────────────────────────────────────
     print("\n" + "=" * 70)
-    print("  All outputs generated!")
+    print("  All outputs generated in 'outputs/' directory!")
     print("=" * 70)
 
 

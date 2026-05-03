@@ -6,8 +6,8 @@ import numpy as np
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from config import N, K, P, L_OS, NUM_ITER, QAM_ORDERS, SCHEME_NAMES
-from utils import interpolate_papr_at_ccdf
+from .config import N, K, P, L_OS, NUM_ITER, QAM_ORDERS, SCHEME_NAMES
+from .utils import interpolate_papr_at_ccdf
 
 
 # ──────────── Styles ────────────────────────

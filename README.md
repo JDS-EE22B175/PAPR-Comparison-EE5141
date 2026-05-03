@@ -62,13 +62,18 @@ python papr_simulation.py
 ## Project Structure
 
 ```
-├── papr_simulation.py      # Main simulation script
-├── requirements.txt        # Python dependencies
-├── README.md               # This file
-├── .gitignore
-└── outputs/                # Generated after running
-    ├── papr_ccdf_*.png
-    └── papr_results.xlsx
+├── main.py            # Entry point
+├── src/               # Core logic (package)
+│   ├── config.py
+│   ├── transmitters.py
+│   ├── utils.py
+│   ├── plotting.py
+│   └── export_excel.py
+├── outputs/           # Generated results (Excel, PNGs)
+├── legacy/            # Original scripts
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
 ## License

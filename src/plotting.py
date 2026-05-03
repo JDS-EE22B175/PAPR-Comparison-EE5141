@@ -6,8 +6,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from utils import compute_ccdf
-from config import N, P, K, NUM_ITER, SCHEME_NAMES
+from .utils import compute_ccdf
+from .config import N, P, K, NUM_ITER, SCHEME_NAMES
 
 # ──────────── Visual constants ──────────────
 COLORS = ["#e74c3c", "#2ecc71", "#3498db", "#9b59b6"]

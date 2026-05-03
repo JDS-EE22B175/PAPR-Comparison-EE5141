@@ -37,8 +37,8 @@ indices {k, K+k, …}, so the identity holds for all users.
 
 import numpy as np
 from numpy.fft import fft
-from config import N, K, P, L_OS, SCHEME_NAMES, SCHEME_FUNCS
-from utils import oversample_freq
+from .config import N, K, P, L_OS, SCHEME_NAMES, SCHEME_FUNCS
+from .utils import oversample_freq
 
 
 # =============================================================================
