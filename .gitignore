@@ -1,3 +1,7 @@
-.venv
+.venv/
+__pycache__/
+*.pyc
 *.pdf
 *.txt
+!requirements.txt
+!README.md
