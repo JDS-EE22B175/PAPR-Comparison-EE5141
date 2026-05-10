@@ -278,12 +278,12 @@ def plot_ccdf_with_theory(
     papr0_range = np.linspace(0, 14, 500)
     theory_ccdf = theoretical_ofdma_ccdf(papr0_range, N_sub)
     ax.semilogy(papr0_range, theory_ccdf, 'k--', linewidth=2.0, alpha=0.7,
-                label=f"Theory (N={N_sub})")
+                label=f"Ochiai-Imai bound (P={N_sub})")
     
     ax.set_xlabel("PAPR₀ (dB)", fontsize=13)
     ax.set_ylabel("Pr(PAPR > PAPR₀)  [CCDF]", fontsize=13)
     ax.set_title(
-        f"CCDF with Theoretical Bound | {qam_order}-QAM, N={N_sub}",
+        f"CCDF with Theoretical Bound | {qam_order}-QAM, P={N_sub} active subcarriers",
         fontsize=13, fontweight='bold')
     ax.legend(fontsize=11, loc='upper right')
     ax.grid(True, which='both', alpha=0.4)
