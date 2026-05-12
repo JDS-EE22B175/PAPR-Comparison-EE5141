@@ -78,32 +78,27 @@ def generate_constellation_plot() -> None:
     all_clean = np.concatenate(all_clean)
     all_smeared = np.concatenate(all_smeared)
     
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    fig, ax = plt.subplots(figsize=(7, 7))
     
-    # Plot 1: Clean
-    axes[0].scatter(all_clean.real, all_clean.imag, s=15, c='#3498db', alpha=0.6, edgecolor='none')
-    axes[0].set_title('Ideal Receiver (No Clipping)', fontsize=14, fontweight='bold')
-    
-    # Plot 2: Smeared (EVM distortion)
-    axes[1].scatter(all_smeared.real, all_smeared.imag, s=15, c='#e74c3c', alpha=0.5, edgecolor='none')
-    axes[1].set_title('Distorted Receiver (Clipping Ratio = 1.2)', fontsize=14, fontweight='bold')
+    # Plot: Smeared (EVM distortion)
+    ax.scatter(all_smeared.real, all_smeared.imag, s=15, c='#e74c3c', alpha=0.5, edgecolor='none')
+    ax.set_title('OFDMA Constellation Distortion (CR = 1.2)', fontsize=14, fontweight='bold')
     
     # Add an inset box explaining EVM
     evm = np.sqrt(np.mean(np.abs(all_smeared - all_clean)**2) / np.mean(np.abs(all_clean)**2)) * 100
-    axes[1].text(0.95, 0.05, f"EVM ≈ {evm:.1f}%\n(Severe In-Band Distortion)", 
-                 transform=axes[1].transAxes, fontsize=12, fontweight='bold',
+    ax.text(0.95, 0.05, f"EVM ≈ {evm:.1f}%\n(Heavy In-Band Distortion)", 
+                 transform=ax.transAxes, fontsize=12, fontweight='bold',
                  ha='right', va='bottom', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 
-    for ax in axes:
-        ax.set_aspect('equal', 'box')
-        # 16-QAM symbols (normalized to power=1) max out around +/- 1.34
-        ax.set_xlim(-1.8, 1.8)
-        ax.set_ylim(-1.8, 1.8)
-        ax.axhline(0, color='black', linestyle='-', linewidth=0.5)
-        ax.axvline(0, color='black', linestyle='-', linewidth=0.5)
-        ax.grid(True, alpha=0.3, linestyle='--')
-        ax.set_xlabel('In-Phase (I)', fontsize=13)
-        ax.set_ylabel('Quadrature (Q)', fontsize=13)
+    ax.set_aspect('equal', 'box')
+    # 16-QAM symbols (normalized to power=1) max out around +/- 1.34
+    ax.set_xlim(-1.8, 1.8)
+    ax.set_ylim(-1.8, 1.8)
+    ax.axhline(0, color='black', linestyle='-', linewidth=0.5)
+    ax.axvline(0, color='black', linestyle='-', linewidth=0.5)
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.set_xlabel('In-Phase (I)', fontsize=13)
+    ax.set_ylabel('Quadrature (Q)', fontsize=13)
         
     fig.tight_layout()
     os.makedirs('outputs', exist_ok=True)
