@@ -78,7 +78,7 @@ def main():
         16: {0.01: [9.76, 9.74, 9.68, 9.68], 0.001: [10.62, 10.65, 10.57, 10.57]},
         64: {0.01: [9.70, 9.73, 9.65, 9.65], 0.001: [10.60, 10.68, 10.60, 10.60]},
     }
-    export_results(all_results, os.path.join("outputs", "papr_results.xlsx"), other_code_results=other_code)
+    export_results(all_results, os.path.join("outputs", "papr_results.xlsx"))
 
     # ── F-DOSS / IFDMA Equivalence Verification ──
     if args.equivalence:

@@ -49,13 +49,7 @@ def _build_transmitters(N_val, K_val, P_val, L_val):
         X[np.arange(P_val) * K_val] = precoded
         return _oversample(X, N_val, L_val)
 
-    def tx_dft_s_ofdma(syms):
-        precoded = fft(syms) / np.sqrt(P_val)
-        X = np.zeros(N_val, dtype=complex)
-        X[0:P_val] = precoded
-        return _oversample(X, N_val, L_val)
-
-    return [tx_ofdma, tx_fdoss, tx_ifdma, tx_dft_s_ofdma]
+    return [tx_ofdma, tx_fdoss, tx_ifdma]
 
 
 def papr_vs_N_sweep(
@@ -78,7 +72,7 @@ def papr_vs_N_sweep(
         print(f"  N={N_val}, P={P_val} ...", end=" ", flush=True)
         
         txs = _build_transmitters(N_val, K_fixed, P_val, L_OS)
-        papr_db = np.zeros((4, num_iter))
+        papr_db = np.zeros((len(txs), num_iter))
         
         for i in range(num_iter):
             syms = gen_qam_symbols(qam_order, P_val)
@@ -87,7 +81,7 @@ def papr_vs_N_sweep(
                 papr_db[s, i] = calc_papr_dB(sig)
         
         results[N_val] = papr_db
-        means = [np.mean(papr_db[s]) for s in range(4)]
+        means = [np.mean(papr_db[s]) for s in range(len(txs))]
         print(f"means: {[f'{m:.2f}' for m in means]}")
     
     return results
@@ -164,7 +158,7 @@ def papr_vs_K_sweep(
         print(f"  K={K_val}, P={P_val} ...", end=" ", flush=True)
         
         txs = _build_transmitters(N_fixed, K_val, P_val, L_OS)
-        papr_db = np.zeros((4, num_iter))
+        papr_db = np.zeros((len(txs), num_iter))
         
         for i in range(num_iter):
             syms = gen_qam_symbols(qam_order, P_val)
@@ -173,7 +167,7 @@ def papr_vs_K_sweep(
                 papr_db[s, i] = calc_papr_dB(sig)
         
         results[K_val] = papr_db
-        means = [np.mean(papr_db[s]) for s in range(4)]
+        means = [np.mean(papr_db[s]) for s in range(len(txs))]
         print(f"means: {[f'{m:.2f}' for m in means]}")
     
     return results

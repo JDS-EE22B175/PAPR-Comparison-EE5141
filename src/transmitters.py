@@ -63,7 +63,6 @@ _REGISTRY = [
     ("OFDMA",         tx_ofdma),
     ("F-DOSS",        tx_fdoss),
     ("IFDMA",         tx_ifdma),
-    ("DFT-s-OFDMA",   tx_dft_spread_ofdma),
 ]
 
 SCHEME_NAMES.clear()
