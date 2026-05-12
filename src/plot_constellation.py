@@ -1,0 +1,96 @@
+"""
+Script to generate a side-by-side scatter plot of 16-QAM constellations.
+Left: Ideal received symbols (no clipping)
+Right: Smeared symbols (heavy clipping)
+To visually demonstrate the EVM penalty.
+"""
+
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import os
+
+from src.utils import gen_qam_symbols
+from src.extended_analysis import clip_signal
+from src.config import N, P, L_OS
+from src.transmitters import tx_ofdma
+from numpy.fft import fft
+
+def tx_rx_chain(syms, cr=None):
+    """
+    Passes symbols through OFDMA Tx, applies optional clipping, and runs Rx.
+    """
+    # 1. Transmitter
+    sig = tx_ofdma(syms)
+    
+    # 2. Channel (Clipping)
+    if cr is not None and cr < 50:
+        sig = clip_signal(sig, cr)
+        
+    # 3. Receiver
+    # The signal is oversampled by L_OS. The N-point data is spread across N*L_OS.
+    # Specifically, oversample_freq puts the first N/2 bins at the start, 
+    # and the last N/2 at the end of the N*L_OS array.
+    N_os = N * L_OS
+    S_rx = fft(sig) * np.sqrt(N_os / N) # reverse the scaling from oversampling
+    
+    # Extract the P subcarriers which are at indices 0 to P-1 for OFDMA
+    rx_syms = S_rx[:P]
+    return rx_syms
+
+def generate_constellation_plot():
+    np.random.seed(42)
+    
+    all_clean = []
+    all_smeared = []
+    
+    # Run multiple frames to build up a nice "cloud" of points
+    num_frames = 200
+    for _ in range(num_frames):
+        syms = gen_qam_symbols(16, P)
+        rx_clean = tx_rx_chain(syms, cr=100)      # No clipping
+        rx_smeared = tx_rx_chain(syms, cr=1.2)    # Heavy clipping (CR=1.2)
+        
+        all_clean.append(rx_clean)
+        all_smeared.append(rx_smeared)
+        
+    all_clean = np.concatenate(all_clean)
+    all_smeared = np.concatenate(all_smeared)
+    
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    
+    # Plot 1: Clean
+    axes[0].scatter(all_clean.real, all_clean.imag, s=15, c='#3498db', alpha=0.6, edgecolor='none')
+    axes[0].set_title('Ideal Receiver (No Clipping)', fontsize=14, fontweight='bold')
+    
+    # Plot 2: Smeared (EVM distortion)
+    axes[1].scatter(all_smeared.real, all_smeared.imag, s=15, c='#e74c3c', alpha=0.5, edgecolor='none')
+    axes[1].set_title('Distorted Receiver (Clipping Ratio = 1.2)', fontsize=14, fontweight='bold')
+    
+    # Add an inset box explaining EVM
+    evm = np.sqrt(np.mean(np.abs(all_smeared - all_clean)**2) / np.mean(np.abs(all_clean)**2)) * 100
+    axes[1].text(0.95, 0.05, f"EVM ≈ {evm:.1f}%\n(Severe In-Band Distortion)", 
+                 transform=axes[1].transAxes, fontsize=12, fontweight='bold',
+                 ha='right', va='bottom', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+
+    for ax in axes:
+        ax.set_aspect('equal', 'box')
+        # 16-QAM symbols (normalized to power=1) max out around +/- 1.34
+        ax.set_xlim(-1.8, 1.8)
+        ax.set_ylim(-1.8, 1.8)
+        ax.axhline(0, color='black', linestyle='-', linewidth=0.5)
+        ax.axvline(0, color='black', linestyle='-', linewidth=0.5)
+        ax.grid(True, alpha=0.3, linestyle='--')
+        ax.set_xlabel('In-Phase (I)', fontsize=13)
+        ax.set_ylabel('Quadrature (Q)', fontsize=13)
+        
+    fig.tight_layout()
+    os.makedirs('outputs', exist_ok=True)
+    save_path = os.path.join('outputs', 'clipping_constellation.png')
+    fig.savefig(save_path, dpi=200, bbox_inches='tight')
+    print(f"  Saved: {save_path}")
+
+if __name__ == '__main__':
+    print("Generating constellation plot...")
+    generate_constellation_plot()
