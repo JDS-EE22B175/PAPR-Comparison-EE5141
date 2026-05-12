@@ -5,21 +5,33 @@ Right: Smeared symbols (heavy clipping)
 To visually demonstrate the EVM penalty.
 """
 
+import os
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import os
-
-from src.utils import gen_qam_symbols
-from src.extended_analysis import clip_signal
-from src.config import N, P, L_OS
-from src.transmitters import tx_ofdma
 from numpy.fft import fft
 
-def tx_rx_chain(syms, cr=None):
+from .utils import gen_qam_symbols
+from .extended_analysis import clip_signal
+from .config import N, P, L_OS
+from .transmitters import tx_ofdma
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. Transmitter - Channel - Receiver Chain
+# ─────────────────────────────────────────────────────────────────────────────
+
+def tx_rx_chain(syms: np.ndarray, cr: float = None) -> np.ndarray:
     """
     Passes symbols through OFDMA Tx, applies optional clipping, and runs Rx.
+    
+    Args:
+        syms: Input QAM symbols.
+        cr: Clipping ratio (CR = A_clip / sigma). If None or >= 50, no clipping.
+        
+    Returns:
+        rx_syms: The recovered symbols at the receiver.
     """
     # 1. Transmitter
     sig = tx_ofdma(syms)
@@ -33,13 +45,21 @@ def tx_rx_chain(syms, cr=None):
     # Specifically, oversample_freq puts the first N/2 bins at the start, 
     # and the last N/2 at the end of the N*L_OS array.
     N_os = N * L_OS
-    S_rx = fft(sig) * np.sqrt(N_os / N) # reverse the scaling from oversampling
+    S_rx = fft(sig) * np.sqrt(N_os / N)  # Reverse the scaling from oversampling
     
     # Extract the P subcarriers which are at indices 0 to P-1 for OFDMA
     rx_syms = S_rx[:P]
     return rx_syms
 
-def generate_constellation_plot():
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. Constellation Plot Generation
+# ─────────────────────────────────────────────────────────────────────────────
+
+def generate_constellation_plot() -> None:
+    """
+    Generates and saves the 16-QAM EVM visual demonstration plot.
+    """
     np.random.seed(42)
     
     all_clean = []
@@ -90,6 +110,7 @@ def generate_constellation_plot():
     save_path = os.path.join('outputs', 'clipping_constellation.png')
     fig.savefig(save_path, dpi=200, bbox_inches='tight')
     print(f"  Saved: {save_path}")
+
 
 if __name__ == '__main__':
     print("Generating constellation plot...")
