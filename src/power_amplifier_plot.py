@@ -110,26 +110,8 @@ def plot_pa_curve(save_path: str = "outputs/pa_curve.png") -> None:
 
     ax.set_xlabel('Input Power $P_{in}$ (dBm)', fontsize=13)
     ax.set_ylabel('Output Power $P_{out}$ (dBm)', fontsize=13)
-    ax.set_title('PA Transfer Curve & Efficiency', fontsize=14, fontweight='bold')
-    
-    # -- Efficiency Overlay (Right Y-Axis) --
-    ax2 = ax.twinx()
-    # Simplified efficiency model: peaks at saturation
-    P_out_lin = 10.0 ** (P_out_actual / 10.0)
-    P_sat_lin = 10.0 ** (P_SAT_DBM / 10.0)
-    efficiency = 60.0 * np.sqrt(P_out_lin / P_sat_lin) # Example: 60% max efficiency
-    
-    line_eff, = ax2.plot(P_in, efficiency, color='#8e44ad', linewidth=2.0, 
-                         linestyle='-.', label='Efficiency (%)')
-    ax2.set_ylabel('Efficiency (%)', fontsize=13, color='#8e44ad')
-    ax2.tick_params(axis='y', labelcolor='#8e44ad')
-    ax2.set_ylim(0, 100)
-
-    # Combine legends
-    lines_ax, labels_ax = ax.get_legend_handles_labels()
-    ax.legend(lines_ax + [line_eff], labels_ax + ['Efficiency (%)'], 
-              fontsize=10, loc='upper left', framealpha=0.9)
-    
+    ax.set_title('Power Amplifier Transfer Curve', fontsize=14, fontweight='bold')
+    ax.legend(fontsize=11, loc='upper left')
     ax.grid(True, alpha=0.35, linestyle='--')
     ax.set_xlim(P_in[0], P_in[-1])
     ax.set_ylim(P_in[0] + GAIN_DB - 2, P_SAT_DBM + 3)

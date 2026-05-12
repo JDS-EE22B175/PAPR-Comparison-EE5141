@@ -135,7 +135,7 @@ def main():
         print("========================================")
         for qam in config.QAM_ORDERS:
             plot_ccdf_with_theory(
-                all_results[qam], qam, config.P,
+                all_results[qam], qam, config.P * config.L_OS,
                 os.path.join("outputs", f"papr_ccdf_theory_{qam}qam.png"))
 
         # 4. Clipping & EVM tradeoff
